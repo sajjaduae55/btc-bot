@@ -1,23 +1,27 @@
-name: btc-bot-runner
+import ccxt
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '*/5 * * * *'
+print("Bot Started...")
 
-jobs:
-  run-bot:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install libraries
-        run: pip install ccxt python-binance
-      - name: Run Bot
-        env:
-          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
-          BINANCE_SECRET: ${{ secrets.BINANCE_SECRET }}
-        run: python test_bot.py
+try:
+    # Public connection - No keys needed for price
+    exchange = ccxt.binance({
+        'enableRateLimit': True
+    })
+    
+    # Get BTC Price - This will work
+    ticker = exchange.fetch_ticker('BTC/USDT')
+    price = ticker['last']
+    print(f"BTC Price is: {price}")
+
+    # Simple Strategy Example
+    if price < 110000:
+        print("Signal: BUY - Price is Low")
+    else:
+        print("Signal: WAIT - Price is High")
+
+    print("Bot is LIVE - Price check OK!")
+
+except Exception as e:
+    print(f"Error: {e}")
+
+print("Bot Finished - OK")
